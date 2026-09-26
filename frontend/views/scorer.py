@@ -18,10 +18,13 @@ def _read_jd(jd_file, jd_text: str) -> str:
     """
     if jd_text:
         return jd_text.strip()
+
     if jd_file is None:
         return ""
+
     if jd_file.name.lower().endswith(".txt"):
         return jd_file.getvalue().decode("utf-8", errors="ignore")
+
     st.warning(
         "Job description files must be `.txt` for now — paste the JD text instead "
         "if you have a PDF or DOCX."
@@ -32,15 +35,24 @@ def _read_jd(jd_file, jd_text: str) -> str:
 def _show_backend_error(exc: Exception) -> None:
     """Translate a `requests` exception into a friendly Streamlit error."""
     if isinstance(exc, requests.ConnectionError):
-        st.error("Could not reach the backend. Is `uvicorn backend.main:app` running on port 8000?")
+        st.error(
+            "Could not reach the backend. Is `uvicorn backend.main:app` "
+            "running on port 8000?"
+        )
     elif isinstance(exc, requests.Timeout):
-        st.error("The backend took too long to respond. Try a smaller resume or check the server logs.")
+        st.error(
+            "The backend took too long to respond. Try a smaller resume "
+            "or check the server logs."
+        )
     elif isinstance(exc, requests.HTTPError) and exc.response is not None:
         try:
             detail = exc.response.json().get("detail", exc.response.text)
         except ValueError:
             detail = exc.response.text
-        st.error(f"Backend returned {exc.response.status_code}: {detail}")
+
+        st.error(
+            f"Backend returned {exc.response.status_code}: {detail}"
+        )
     else:
         st.error(f"Unexpected error: {exc}")
 
@@ -48,18 +60,32 @@ def _show_backend_error(exc: Exception) -> None:
 def _summary_text(analysis: dict) -> str:
     """Tiny client-side text summary for the Download button."""
     score = analysis.get("ATS_score", analysis.get("ats_score", 0))
-    lines = [f"ATS Score: {score:.0f}/100", ""]
+
+    lines = [
+        f"ATS Score: {score:.0f}/100",
+        "",
+    ]
+
     if analysis.get("strengths"):
         lines.append("STRENGTHS:")
-        lines.extend(f"  - {s}" for s in analysis["strengths"])
+        lines.extend(
+            f"  - {s}" for s in analysis["strengths"]
+        )
         lines.append("")
+
     if analysis.get("critical_issues"):
         lines.append("CRITICAL ISSUES:")
-        lines.extend(f"  - {s}" for s in analysis["critical_issues"])
+        lines.extend(
+            f"  - {s}" for s in analysis["critical_issues"]
+        )
         lines.append("")
+
     if analysis.get("suggestions"):
         lines.append("SUGGESTIONS:")
-        lines.extend(f"  - {s}" for s in analysis["suggestions"])
+        lines.extend(
+            f"  - {s}" for s in analysis["suggestions"]
+        )
+
     return "\n".join(lines)
 
 
@@ -69,14 +95,19 @@ def _render_upload_area(analysis_mode: str):
 
     with left:
         st.markdown("### 📄 Upload Resume")
+
         resume_file = st.file_uploader(
             "Choose your resume file",
             type=["pdf", "doc", "docx"],
             help="Supported: PDF, DOC, DOCX (max 5 MB)",
             key="resume_upload",
         )
+
         if resume_file:
-            st.success(f"✅ {resume_file.name} ({resume_file.size / 1024:.1f} KB)")
+            st.success(
+                f"✅ {resume_file.name} "
+                f"({resume_file.size / 1024:.1f} KB)"
+            )
 
     jd_file: Optional[object] = None
     jd_text = ""
@@ -84,20 +115,24 @@ def _render_upload_area(analysis_mode: str):
     with right:
         if analysis_mode == "Job Description Comparison":
             st.markdown("### 📋 Job Description")
+
             jd_method = st.radio(
                 "Input method:",
                 ["Paste Text", "Upload .txt File"],
                 horizontal=True,
                 key="jd_input_method",
             )
+
             if jd_method == "Upload .txt File":
                 jd_file = st.file_uploader(
                     "Choose JD file (.txt only)",
                     type=["txt"],
                     key="jd_upload",
                 )
+
                 if jd_file:
                     st.success(f"✅ {jd_file.name}")
+
             else:
                 jd_text = st.text_area(
                     "Paste job description text:",
@@ -105,25 +140,35 @@ def _render_upload_area(analysis_mode: str):
                     placeholder="Paste the JD here...",
                     key="jd_text",
                 )
+
                 if jd_text:
                     st.success(f"✅ {len(jd_text)} characters")
+
         else:
             st.markdown("### 📋 Job Description")
-            st.info("Switch to 'Job Description Comparison' mode to enable JD matching.")
+
+            st.info(
+                "Switch to 'Job Description Comparison' mode "
+                "to enable JD matching."
+            )
 
     return resume_file, jd_file, jd_text
 
 
 def _render_export_buttons(analysis: dict) -> None:
     st.markdown("### 📥 Export Results")
-    st.caption("Save your analysis as a PDF report or a lightweight text summary.")
+    st.caption(
+        "Save your analysis as a PDF report or a lightweight text summary."
+    )
 
     c1, c2 = st.columns(2)
 
     with c1:
         with st.container(border=True):
             st.markdown("**📑 PDF Report**")
-            st.caption("A formatted report containing your complete ATS analysis.")
+            st.caption(
+                "A formatted report containing your complete ATS analysis."
+            )
 
             if st.button(
                 "Generate PDF Report",
@@ -136,7 +181,9 @@ def _render_export_buttons(analysis: dict) -> None:
                             analysis,
                             access_token=st.session_state["access_token"],
                         )
+
                     st.session_state["scorer_pdf_bytes"] = pdf_bytes
+
                 except requests.RequestException as exc:
                     _show_backend_error(exc)
 
@@ -153,7 +200,9 @@ def _render_export_buttons(analysis: dict) -> None:
     with c2:
         with st.container(border=True):
             st.markdown("**📄 Text Summary**")
-            st.caption("A simple text version of your ATS analysis.")
+            st.caption(
+                "A simple text version of your ATS analysis."
+            )
 
             st.download_button(
                 "⬇️ Download Summary",
@@ -169,21 +218,17 @@ def render() -> None:
     st.markdown(
         """
         <div style="padding: 0.5rem 0 1.5rem 0;">
-            <h1 style="margin-bottom: 0.25rem;">🎯 ATS Resume Analyzer</h1>
+            <h1 style="margin-bottom: 0.25rem;">
+                🎯 ATS Resume Analyzer
+            </h1>
             <p style="font-size: 1.05rem; color: #5f6368; margin-top: 0;">
-                Analyze your resume for ATS compatibility and match it against job descriptions.
+                Analyze your resume for ATS compatibility and match it against
+                job descriptions.
             </p>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    with st.sidebar:
-        st.markdown("---")
-        st.markdown("## 📊 Analysis Options")
-        st.info(
-            "**General ATS Score**: resume only — overall compatibility.\n\n"
-            "**JD Comparison**: resume + job description — targeted match analysis."
-        )
 
     st.markdown("---")
 
@@ -195,51 +240,80 @@ def render() -> None:
 
     st.markdown("---")
 
-    resume_file, jd_file, jd_text = _render_upload_area(analysis_mode)
+    resume_file, jd_file, jd_text = _render_upload_area(
+        analysis_mode
+    )
 
     st.markdown("---")
 
     if not resume_file:
         st.info("👆 Upload your resume to begin.")
+
         # If we have a prior result in session, render it again.
         if st.session_state.get("scorer_analysis"):
-            display_results_dashboard(st.session_state["scorer_analysis"])
+            display_results_dashboard(
+                st.session_state["scorer_analysis"]
+            )
+
         return
 
     access_token = st.session_state.get("access_token")
+
     if not access_token:
-        st.warning("⚠️ Sign in from the sidebar to analyze a resume.")
+        st.warning(
+            "⚠️ Sign in from the sidebar to analyze a resume."
+        )
         return
 
     _, mid, _ = st.columns([1, 2, 1])
+
     with mid:
-        analyze = st.button("🚀 Analyze Resume", use_container_width=True, type="primary")
+        analyze = st.button(
+            "🚀 Analyze Resume",
+            use_container_width=True,
+            type="primary",
+        )
 
     if not analyze:
         # Re-show previous result on rerun (e.g. after PDF generation).
         if st.session_state.get("scorer_analysis"):
-            display_results_dashboard(st.session_state["scorer_analysis"])
-            _render_export_buttons(st.session_state["scorer_analysis"])
+            display_results_dashboard(
+                st.session_state["scorer_analysis"]
+            )
+            _render_export_buttons(
+                st.session_state["scorer_analysis"]
+            )
+
         return
 
     # Fresh analysis — drop any cached PDF/result.
     st.session_state.pop("scorer_pdf_bytes", None)
     st.session_state.pop("scorer_analysis", None)
 
-    job_description = _read_jd(jd_file, jd_text) if analysis_mode == "Job Description Comparison" else ""
+    job_description = (
+        _read_jd(jd_file, jd_text)
+        if analysis_mode == "Job Description Comparison"
+        else ""
+    )
 
     try:
-        with st.spinner("Analyzing your resume... this can take 10–30 seconds."):
+        with st.spinner(
+            "Analyzing your resume... this can take 10–30 seconds."
+        ):
             analysis = api_client.analyze_resume(
                 resume_file=resume_file,
                 access_token=access_token,
                 job_description=job_description,
             )
+
     except requests.RequestException as exc:
         _show_backend_error(exc)
         return
 
     st.session_state["scorer_analysis"] = analysis
+
     st.success("✅ Analysis complete!")
+
     display_results_dashboard(analysis)
+
     _render_export_buttons(analysis)

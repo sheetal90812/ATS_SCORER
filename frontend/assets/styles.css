@@ -1721,3 +1721,45 @@ Animation utility classes */
     max-width: 300px;
     margin: 0 auto;
 }
+
+
+/* ===== Premium Sidebar ===== */
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 4px 22px 4px;
+}
+
+.sidebar-logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    background: rgba(99, 102, 241, 0.14);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.sidebar-title {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+}
+
+.sidebar-subtitle {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+.sidebar-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: #94a3b8;
+    margin: 0 0 8px 4px;
+}

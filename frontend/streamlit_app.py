@@ -64,7 +64,27 @@ if 'current_view' not in st.session_state:
 
 # Sidebar navigation
 with st.sidebar:
-    st.markdown("## Navigation")
+    st.markdown(
+        """
+        <div class="sidebar-brand">
+            <div class="sidebar-logo">🎯</div>
+            <div>
+                <div class="sidebar-title">ATS SCORER</div>
+                <div class="sidebar-subtitle">AI Resume Intelligence</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        "<div class='sidebar-section-label'>WORKSPACE</div>",
+        unsafe_allow_html=True,
+    )
+
+
+    st.markdown("---")
+    st.markdown("### 👤 Account")
     
     if st.button("🏠 Home", use_container_width=True):
         st.session_state.current_view = 'landing'
