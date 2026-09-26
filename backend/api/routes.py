@@ -1,6 +1,6 @@
 import logging
 from typing import List, Optional
-
+from backend.core.config import SENTENCE_TRANSFORMER_MODEL
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 
 from backend.api.auth import get_current_user
@@ -30,9 +30,16 @@ async def analyze_resume(
     warnings: List[str] = []
 
 
-    nlp      = request.app.state.nlp
+    nlp = request.app.state.nlp
     embedder = request.app.state.embedder
 
+    if job_description and job_description.strip() and embedder is None:
+        from sentence_transformers import SentenceTransformer
+
+        logger.info(f'Loading SentenceTransformer for JD comparison: {SENTENCE_TRANSFORMER_MODEL}')
+        embedder = SentenceTransformer(SENTENCE_TRANSFORMER_MODEL)
+        request.app.state.embedder = embedder
+        logger.info(f'Loaded {SENTENCE_TRANSFORMER_MODEL}')
 
     try:
         file_bytes = await resume.read()
