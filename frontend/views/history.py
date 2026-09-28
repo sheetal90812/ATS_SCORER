@@ -168,7 +168,7 @@ def render() -> None:
             entry_id = entry.get("id")
 
             if entry_id:
-                b1, b2 = st.columns(3)
+                b1, b2, b3 = st.columns(3)
 
                 with b1:
                     if st.button(
