@@ -98,10 +98,6 @@ def _extract_pdf_with_pdfplumber(file_data: bytes) -> str:
             user_message='No text could be extracted from the PDF.'
         )
     
-    hyperlinks = _extract_pdf_hyperlinks(file_data)
-    if hyperlinks:
-        text = text.strip() + '\n' + hyperlinks
-
     return text.strip()
 
 
@@ -119,9 +115,6 @@ def _extract_pdf_with_pypdf2(file_data: bytes) -> str:
             user_message='No text could be extracted from the PDF.'
         )
 
-    hyperlinks = _extract_pdf_hyperlinks(file_data)
-    if hyperlinks:
-        text = text.strip() + '\n' + hyperlinks
 
     return text.strip()
 
@@ -129,11 +122,11 @@ def _extract_pdf_with_pypdf2(file_data: bytes) -> str:
 def extract_text_from_pdf(file_data: bytes) -> str:
     try: 
         result, used_fallback=with_fallback(
-        _extract_pdf_with_pdfplumber, 
-        _extract_pdf_with_pypdf2, 
-        file_data, 
-        log_fallback=True
-    )
+            _extract_pdf_with_pypdf2,
+            _extract_pdf_with_pdfplumber,
+            file_data,
+            log_fallback=True
+        )
     
         if used_fallback:
             log_info('PDF EXTRACTION succeded using the PyPDF2 fallback', context='resume_parser')
