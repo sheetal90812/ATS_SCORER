@@ -74,6 +74,13 @@ def analyze_resume(
 
     print("DEBUG ANALYZE BACKEND URL:", backend_url)
 
+    print(
+        "DEBUG AUTH TOKEN:",
+        "present" if access_token else "MISSING",
+        "length=",
+        len(access_token) if access_token else 0,
+    )
+
     response = requests.post(
         f"{backend_url}/api/v1/analyze-resume",
         files=files,
